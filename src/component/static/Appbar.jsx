@@ -98,7 +98,7 @@ function Appbar() {
                   setShowChatRequest(false);    
                   if(jwt) fetchRequest();
                 }}
-                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300"
+                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-0.5 px-0.5 rounded-md transition duration-300"
             >
                 Requests 2U
             </button>
@@ -106,7 +106,7 @@ function Appbar() {
             {/* Logout Button */}
             <button
               onClick={handleLogout}
-              className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300"
+              className="bg-red-600 hover:bg-red-700 text-white font-semibold py-0.5 px-0.5 rounded-md transition duration-300"
             >
               Logout
             </button>
@@ -116,7 +116,7 @@ function Appbar() {
             {/* Login Button */}
             <button
               onClick={() => navigate("/login")}
-              className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300"
+              className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-0.5 px-0.5 rounded-md transition duration-300"
             >
               Login
             </button>
@@ -124,7 +124,7 @@ function Appbar() {
             {/* Register Button */}
             <button
               onClick={() => navigate("/register")}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-0.5 px-0.5 rounded-md transition duration-300"
             >
               Register
             </button>

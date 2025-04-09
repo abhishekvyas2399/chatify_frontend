@@ -12,6 +12,8 @@ dist
 dist-ssr
 *.local
 .env
+ssh_frontend.txt
+ssh_frontend.txt.pub
 
 # Editor directories and files
 .vscode/*
