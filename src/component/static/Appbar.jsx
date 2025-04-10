@@ -77,7 +77,7 @@ function Appbar() {
 
   return (
     <div className="bg-black text-white flex justify-between items-center p-4 shadow-md relative">
-      <h1 className="text-xl font-bold">Chatify</h1>
+      <h1 className="text-sm sm:text-xl font-bold">Chatify</h1>
 
       <div className="flex gap-4">
         {isConnected ? (
@@ -85,7 +85,7 @@ function Appbar() {
             {/* Requests Sent Button */}
             <button
               onClick={() =>{setShowChatRequest(!showChatRequest);setShowReceivedRequests(false)}}
-              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300"
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold sm:py-2 sm:px-4 py-0.5 px-0.5 rounded-md transition duration-300"
             >
               Send request
             </button>
@@ -98,7 +98,7 @@ function Appbar() {
                   setShowChatRequest(false);    
                   if(jwt) fetchRequest();
                 }}
-                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-0.5 px-0.5 rounded-md transition duration-300"
+                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold sm:py-2 sm:px-4 py-0.5 px-0.5 rounded-md transition duration-300"
             >
                 Requests 2U
             </button>
@@ -106,7 +106,7 @@ function Appbar() {
             {/* Logout Button */}
             <button
               onClick={handleLogout}
-              className="bg-red-600 hover:bg-red-700 text-white font-semibold py-0.5 px-0.5 rounded-md transition duration-300"
+              className="bg-red-600 hover:bg-red-700 text-white font-semibold py-0.5 px-0.5 sm:py-2 sm:px-4 rounded-md transition duration-300"
             >
               Logout
             </button>
@@ -116,7 +116,7 @@ function Appbar() {
             {/* Login Button */}
             <button
               onClick={() => navigate("/login")}
-              className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-0.5 px-0.5 rounded-md transition duration-300"
+              className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold sm:py-2 sm:px-4 py-0.5 px-0.5 rounded-md transition duration-300"
             >
               Login
             </button>
@@ -124,7 +124,7 @@ function Appbar() {
             {/* Register Button */}
             <button
               onClick={() => navigate("/register")}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-0.5 px-0.5 rounded-md transition duration-300"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold sm:py-2 sm:px-4 py-0.5 px-0.5 rounded-md transition duration-300"
             >
               Register
             </button>
@@ -146,7 +146,7 @@ function Appbar() {
           <ul>
             {requests.map((request, index) => (
               <li key={index} className="flex justify-between items-center bg-gray-800 p-2 mb-2 rounded-md">
-                <span>{request.sender_name}</span>
+                <span className="truncate overflow-hidden max-w-[60%]">{request.sender_name}</span>
                 <div className="flex gap-2">
                   <button
                     onClick={() => accept(request._id)}

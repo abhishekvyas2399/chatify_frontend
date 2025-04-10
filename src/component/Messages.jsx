@@ -94,19 +94,19 @@ export default function Messages() {
                             {oldChatMessage?oldChatMessage.map((msg,index) => (
                                 <div key={index} className={`p-3 my-2 rounded-lg ${msg.sender_name === userInfo.username ? "bg-blue-500 text-white text-right ml-auto" : "bg-gray-300 text-black"}`}>
                                     <div className="text-sm font-semibold mb-1">{msg.sender_name==userInfo.username?"You":msg.sender_name}</div>
-                                    <div className="bg-gray-200 p-2 rounded-md max-w-[70%] inline-block shadow-sm text-black">{msg.message}</div>
+                                    <div className="bg-gray-200 p-2 rounded-md max-w-[70%] inline-block shadow-sm text-black w-fit  break-words  whitespace-pre-wrap">{msg.message}</div>
                                 </div>
                             )):null}
                             {AllUnreadMessage?AllUnreadMessage.map((msg,index) => (
                                 <div key={index} className={`p-2 my-1 rounded ${msg.sender_name === userInfo.username ? "bg-blue-500 text-white text-right" : "bg-gray-300 text-black"}`}>
                                     <div className="text-sm font-semibold mb-1">{msg.sender_name==userInfo.username?"You":msg.sender_name}</div>
-                                    <div className="bg-gray-200 p-2 rounded-md max-w-[70%] inline-block shadow-sm text-black">{msg.message}</div>
+                                    <div className="bg-gray-200 p-2 rounded-md max-w-[70%] inline-block shadow-sm text-black w-fit  break-words  whitespace-pre-wrap">{msg.message}</div>
                                 </div>
                             )):null}
                             {newMessage?newMessage.map((msg,index) => (
                                 <div key={index} className={`p-2 my-1 rounded ${msg.senderName === userInfo.username ? "bg-blue-500 text-white text-right" : "bg-gray-300 text-black"}`}>
                                     <div className="text-sm font-semibold mb-1">{msg.senderName==userInfo.username?"You":msg.senderName}</div>
-                                    <div className="bg-gray-200 p-2 rounded-md max-w-[70%] inline-block shadow-sm text-black">{msg.message}</div>
+                                    <div className="bg-gray-200 p-2 rounded-md max-w-[70%] inline-block shadow-sm text-black w-fit  break-words  whitespace-pre-wrap">{msg.message}</div>
                                 </div>
                             )):null}
                         </div>
