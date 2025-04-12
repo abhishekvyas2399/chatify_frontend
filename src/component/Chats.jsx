@@ -4,10 +4,28 @@ import {setSelectedChat} from "../redux/slices/selectedChatSlice"
 import { useDispatch, useSelector } from "react-redux";
 
 export default function Chats(){
+    const server_url=import.meta.env.VITE_SERVER_URL;
     const navigate=useNavigate();
     const dispatch=useDispatch();
     const Chats =useSelector(state=>state.Chats.data);
     const userData_username =useSelector(state=>state.userData.data.userInfo.username);
+    const jwt=useSelector(state=>state.userData.data.jwt);
+
+    const markChatReaded=async (chatId)=>{
+        if (chatId){
+            fetch(`${server_url}/api/messages/read/${chatId}`,{
+                method:"POST",
+                headers:{
+                  "Content-Type":"application/json",
+                  Authorization:jwt
+                },
+              }).then(res=>{
+                if(res.ok){
+                    console.log("mark readed");
+                }
+              });
+        }
+    }
 
     return (
         <div className="bg-white shadow-md rounded-lg p-4">
@@ -18,6 +36,7 @@ export default function Chats(){
                 key={chat._id}
                 onClick={() =>{
                     dispatch(setSelectedChat({chatId:chat._id,chatDetails:chat}));
+                    markChatReaded(chat._id);
                     if(window.location.pathname=="/"){
                         navigate(`/message`);   
                     }
