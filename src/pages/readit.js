@@ -1,0 +1,6 @@
+make more component and put routing component in pages folder and smaller component in component folder, make component of input box , its heading , ....
+
+
+
+
+also make perfect movement of user when login then move him there if no token move him there,......

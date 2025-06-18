@@ -2,8 +2,7 @@ import {createAsyncThunk, createSlice} from "@reduxjs/toolkit"
 
 export const loadUserData=createAsyncThunk("userData",async ()=>{
     const server_url=import.meta.env.VITE_SERVER_URL;
-    console.log(server_url);
-    console.log("loading user data.....");
+    console.log("loading user data (in redux)).....");
     let canConnect=false;
     let userInfo=null;
     let ISjwtExist=true;

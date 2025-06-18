@@ -2,7 +2,7 @@ import {createSlice,createAsyncThunk} from "@reduxjs/toolkit"
 
 export const load_selectedChat_msg=createAsyncThunk("selectedChat_msg",async (_,{getState})=>{
     const server_url=import.meta.env.VITE_SERVER_URL;
-    console.log("loading old chat.....");
+    console.log("loading old chat (in redux)(selected user chat).....");
     const jwt=getState().userData.data.jwt;
     const selectedChat=getState().selectedChat.chatId;
     let oldMessage=getState().oldChatMessage.data;

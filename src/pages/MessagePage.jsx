@@ -1,5 +1,5 @@
-import Chats from "./Chats";
-import Messages from "./Messages";
+import Chats from "../component/Chats";
+import Messages from "../component/Messages";
 
 function MessagePage(){
     return (

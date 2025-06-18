@@ -2,7 +2,7 @@ import {createSlice,createAsyncThunk} from "@reduxjs/toolkit"
 
 export const loadChat=createAsyncThunk("loadChat",async (_,{getState})=>{
     const server_url=import.meta.env.VITE_SERVER_URL;
-    console.log("loading all chats info.....");
+    console.log("loading all chats info (in redux)(all chat).....");
     const jwt=getState().userData.data.jwt;
     const response=await fetch(`${server_url}/api/chats`,{
         method:"GET",

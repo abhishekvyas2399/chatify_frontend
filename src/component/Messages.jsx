@@ -1,15 +1,13 @@
-import { useState, useEffect, useContext, useRef } from "react";
-import { Socket } from "../context/socketContext";
+import { useCallback, useEffect, useRef } from "react";
+import { useSocket } from "../context/SocketContext";
 import { useDispatch, useSelector } from "react-redux";
 
 import  {load_selectedChat_msg} from "../redux/slices/oldChatMessageSlice"
-import {clearState} from "../redux/slices/oldChatMessageSlice"
-import { current } from "@reduxjs/toolkit";
 
 export default function Messages() {
     const server_url=import.meta.env.VITE_SERVER_URL;
     const dispatch=useDispatch();
-    const {socket}=useContext(Socket);
+    const socket=useSocket();
     const jwt=useSelector(state=>state.userData.data.jwt);
     const selectedChat=useSelector(state=>state.selectedChat.chatId);
     const selectedChatDetails=useSelector(state=>state.selectedChat.chatDetails);
@@ -22,16 +20,9 @@ export default function Messages() {
     const AllUnreadMessage=useSelector(state=>state.AllUnreadMessage.data.unreadMessage[selectedChat]);
     const newMessage=useSelector(state=>state.newMessage[selectedChat]);
 
-    // Load old messages when selectedChat changes in useEffect
-    useEffect(()=>{
-        if(selectedChat){
-            dispatch(clearState());
-            if(selectedChat)    dispatch(load_selectedChat_msg());
-        }
-    },[selectedChat]);
 
     // Handle sending a new message
-    const sendMessage = () => {
+    const sendMessage =useCallback(() => {
         // *********** first send data to server for save in mongoDb then send to socket
         const newMessage=messageRef.current.value;
         messageRef.current.value="";
@@ -51,11 +42,11 @@ export default function Messages() {
                 }
               });
         }
-    };
+    },[messageRef,selectedChat,server_url,jwt,]);
 
 
     // event=>scrolling to top will fetch more 20 old message from backend by redux thunk action dispatch
-    const handleScroll=async ()=>{
+    const handleScroll=useCallback(async ()=>{
         const chatDiv=chatContainerRef.current;
         const prevHeight=chatDiv.scrollHeight;
 
@@ -66,24 +57,25 @@ export default function Messages() {
                 debounceTimeOut=setTimeout(async ()=>{
                     await dispatch(load_selectedChat_msg()).unwrap();
                     chatDiv.scrollTop=chatDiv.scrollHeight-prevHeight; // for smooth rendering by make scroll fix to current position when new data load
-                },1000);
-            } 
-        } 
-    }
+                },300);
+            }
+        }
+    },[chatContainerRef,selectedChat,load_selectedChat_msg]);
     useEffect(()=>{
+        if(!chatContainerRef.current)   return ;
         const chatDiv=chatContainerRef.current;
         if(!chatDiv) return;
         chatDiv.addEventListener("scroll",handleScroll);
         return ()=>{
             chatDiv.removeEventListener("scroll",handleScroll);
         }
-    },[chatContainerRef.current])  // initially chatContainerRef.current null bcz ref={chatContainerRef} run after useEffect so add chatContainerRef.current in dependancy array so in next re-render it run again bcz  chatContainerRef.current now null to <div>
+    },[chatContainerRef,handleScroll])  // initially chatContainerRef.current null bcz ref={chatContainerRef} run after useEffect so add chatContainerRef.current in dependancy array so in next re-render it run again bcz  chatContainerRef.current now null to <div>
 
 
     useEffect(()=>{
         if(chatContainerRef.current)
             chatContainerRef.current.scrollTop=chatContainerRef.current.scrollHeight-chatContainerRef.current.clientHeight;
-    },[newMessage,AllUnreadMessage])
+    },[chatContainerRef,newMessage,AllUnreadMessage])
 
     return (
             <div className="flex flex-col h-full w-full">

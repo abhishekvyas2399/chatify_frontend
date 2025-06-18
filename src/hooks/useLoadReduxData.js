@@ -11,19 +11,21 @@ export const useLoadReduxData=()=>{
     const navigate = useNavigate();
     const dispatch=useDispatch();
 
-    const userData=useSelector(state=>state.userData);
+    const userData=useSelector(state=>state.userData,[]);
     const [isReduxLoading,setisReduxLoading]=useState(true);
 
-    const maxRetry=useRef(50);
+    const maxRetry=useRef(5);
     const [isServerOn,setIsServerOn]=useState(true);
 
 
     const loadEverything=useCallback(async ()=>{
+        if(isReduxLoading==false)   return;
         try{
             // asyncThunk return action/object but by unwrap it return promise so we can await
             //// unwrap used only with asyncThunk we cant use it with normal action
             await dispatch(loadChat()).unwrap()    
             await dispatch(load_allUnread_msg()).unwrap()
+            console.log("!!!!!!!!!re-running unnecessary");
             setisReduxLoading(false);
         }catch(e){
             console.log("error in loading data from redux thunk.....",e.message);
@@ -47,7 +49,7 @@ export const useLoadReduxData=()=>{
             }
         }
         else   loadEverything();
-    },[userData,dispatch,navigate,loadEverything])
+    },[userData,dispatch,navigate,loadEverything])    // navigate is causing re-rendering alot bcz its state changing by code somewhere so if u find that part update it but if navigate is the reason and its not trustworthy then remove it from dependancy array.
 
     return {isServerOn,isReduxLoading};
 }

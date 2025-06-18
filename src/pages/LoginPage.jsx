@@ -45,10 +45,9 @@ function Login(){
 
             const data=await response.json();
 
-            if(response.ok){
+            if(response.ok && data.Authorization){
                 // alert("login successfully.....");
                 localStorage.setItem("Authorization",JSON.stringify(data.Authorization));
-                console.log("before navigate:",localStorage.getItem("Authorization"));
                 await dispatch(loadUserData()).unwrap();
                 navigate("/",{replace:true}) // if i use navigate just after localstorage setItem then race condition occur b/w redux and local storage bcz local storage update later and redux check jwt before so get null and problem. so i not did that
                 // instead i called dispatch of redux before so all wrong/not_load/problem handle by it so on homepage all run correct
@@ -57,7 +56,6 @@ function Login(){
             }
         }
         catch(e){
-            console.log("errror ",e.message)
             setError("Network error");
         }
     };

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import ChatRequest from "../ChatRequest";
+import ChatRequest from "./ChatRequest";
 
 
-import {loadChat} from "../../redux/slices/chatSlice"
+import {loadChat} from "../redux/slices/chatSlice"
 
 function Appbar() {
   const server_url=import.meta.env.VITE_SERVER_URL;
