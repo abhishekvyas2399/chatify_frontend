@@ -3,7 +3,7 @@ import {createSlice,createAsyncThunk} from "@reduxjs/toolkit"
 export const load_allUnread_msg=createAsyncThunk("allUnread_msg",async (_,{getState})=>{
     const server_url=import.meta.env.VITE_SERVER_URL;
     console.log("loading unread msg (in redux)(chat all).....");
-    const jwt=getState().userData.data.jwt;
+    const jwt=getState().userData.jwt;
     const chats=getState().Chats.data;
     const chatsLen=chats.length;
 

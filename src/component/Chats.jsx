@@ -1,4 +1,4 @@
-import { replace, useNavigate } from "react-router-dom";
+import {useNavigate } from "react-router-dom";
 
 import {setSelectedChat} from "../redux/slices/selectedChatSlice"
 import { useDispatch, useSelector } from "react-redux";
@@ -8,8 +8,8 @@ export default function Chats(){
     const navigate=useNavigate();
     const dispatch=useDispatch();
     const Chats =useSelector(state=>state.Chats.data);
-    const userData_username =useSelector(state=>state.userData.data.userInfo.username);
-    const jwt=useSelector(state=>state.userData.data.jwt);
+    const userData_username =useSelector(state=>state.userData.userInfo.username);
+    const jwt=useSelector(state=>state.userData.jwt);
 
     const markChatReaded=async (chatId)=>{
         if (chatId){
@@ -28,7 +28,7 @@ export default function Chats(){
     }
 
     return (
-        <div className="bg-white shadow-md rounded-lg p-4">
+        <div className="bg-white overflow-y-auto max-h-[100%] shadow-md rounded-lg p-4">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Chats</h2>
             <ul className="divide-y divide-gray-300 space-y-3">
             {Chats.map((chat) =>(
@@ -48,7 +48,9 @@ export default function Chats(){
                         {chat.username[0] === userData_username ? chat.username[1][0].toUpperCase() : chat.username[0][0].toUpperCase()}
                     </div>
                     <span className="text-gray-800 font-medium w-fit  break-words  whitespace-pre-wrap">
-                        {chat.username[0] === userData_username ? chat.username[1].toUpperCase() : chat.username[0].toUpperCase()}
+                        {chat.username[0] === userData_username ? 
+                        (chat.username[1].length>8 ?chat.username[1].slice(0,6).toUpperCase()+"..":chat.username[1].toUpperCase() )
+                        :(chat.username[0].length>8?chat.username[0].slice(0,6).toUpperCase()+"..":chat.username[0].toUpperCase())}
                     </span>
                 </li>
             ))}

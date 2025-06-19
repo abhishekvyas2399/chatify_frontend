@@ -8,10 +8,10 @@ export default function Messages() {
     const server_url=import.meta.env.VITE_SERVER_URL;
     const dispatch=useDispatch();
     const socket=useSocket();
-    const jwt=useSelector(state=>state.userData.data.jwt);
+    const jwt=useSelector(state=>state.userData.jwt);
     const selectedChat=useSelector(state=>state.selectedChat.chatId);
     const selectedChatDetails=useSelector(state=>state.selectedChat.chatDetails);
-    const userInfo=useSelector(state=>state.userData.data.userInfo);
+    const userInfo=useSelector(state=>state.userData.userInfo);
     const messageRef=useRef();
     const chatContainerRef=useRef();
     let debounceTimeOut=useRef(); // we make debounce useRef bcz to prevent it while re-render bcz if we lost it we not clear old timeout which make not prevent alot of request and it load our server from request. 

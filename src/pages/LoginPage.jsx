@@ -1,12 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import { replace, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux"
-
-import {loadUserData} from "../redux/slices/userDataSlice"
+import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Login(){
     const server_url=import.meta.env.VITE_SERVER_URL;
-    const dispatch=useDispatch();
     const navigate = useNavigate();
     const usernameRef = useRef();
     const passwordRef = useRef();
@@ -46,10 +42,8 @@ function Login(){
             const data=await response.json();
 
             if(response.ok && data.Authorization){
-                // alert("login successfully.....");
                 localStorage.setItem("Authorization",JSON.stringify(data.Authorization));
-                await dispatch(loadUserData()).unwrap();
-                navigate("/",{replace:true}) // if i use navigate just after localstorage setItem then race condition occur b/w redux and local storage bcz local storage update later and redux check jwt before so get null and problem. so i not did that
+                navigate("/",{replace:true});
                 // instead i called dispatch of redux before so all wrong/not_load/problem handle by it so on homepage all run correct
             }else{
                 setError(data.msg || "invalid username/password");

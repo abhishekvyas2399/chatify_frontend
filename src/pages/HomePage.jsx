@@ -10,7 +10,7 @@ import { clearState, load_selectedChat_msg } from "../redux/slices/oldChatMessag
 
 
 function Homepage(){
-    const {isServerOn,isReduxLoading}=useLoadReduxData();
+    const {isReduxLoading}=useLoadReduxData();
     const isMsgLoading=useJoinRealTimeChat(isReduxLoading);
 
 
@@ -26,7 +26,6 @@ function Homepage(){
 
 
     console.log("home page re-rendering!!");
-    if(!isServerOn)     return  <ServerOff></ServerOff>
     if(isMsgLoading)  return <Loading></Loading>
 
     return (

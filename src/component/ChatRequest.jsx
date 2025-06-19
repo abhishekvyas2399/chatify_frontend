@@ -1,10 +1,10 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { useSelector } from "react-redux";
 
 const ChatRequest = () => {
   const server_url=import.meta.env.VITE_SERVER_URL;
   const chatRequestRef=useRef();
-  const jwt=useSelector(state=>state.userData.data.jwt);
+  const jwt=useSelector(state=>state.userData.jwt);
 
   const handleSendRequest = () => {
     const chatRequest=chatRequestRef.current.value;

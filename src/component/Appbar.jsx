@@ -1,26 +1,26 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import ChatRequest from "./ChatRequest";
 
+import { loadChat } from "../redux/slices/chatSlice";
+import { useSocket } from "../context/SocketContext";
 
-import {loadChat} from "../redux/slices/chatSlice"
-
-function Appbar() {
+function Appbar(){
   const server_url=import.meta.env.VITE_SERVER_URL;
-  const dispatch=useDispatch();
   const navigate = useNavigate();
+  const dispatch= useDispatch();
+  const socket=useSocket();
   const [showChatRequest, setShowChatRequest] = useState(false);
   const [showReceivedRequests, setShowReceivedRequests] = useState(false);
   // const [requests, setRequests] = useState([{username:"name1"},{username:"name2"},{username:"name3"}]);
   const [requests, setRequests] = useState([]);
 
   // Get authentication state
-  const jwt=useSelector((state) => state.userData.data.jwt);
-  const canConnect=useSelector((state) => state.userData.data.canConnect);
-  const isConnected =  jwt && canConnect ? true:false;
+  const jwt=useSelector((state) => state.userData.jwt);
+  const userInfo=useSelector((state) => state.userData.userInfo);
 
-  const fetchRequest=()=>{
+  const fetchRequest=useCallback(()=>{
     fetch(`${server_url}/api/requests/pending`,{
       method:"GET",
       headers:{
@@ -28,9 +28,9 @@ function Appbar() {
         Authorization:jwt
       },
     }).then(res=>res.json()).then(data=>setRequests(data.msg));
-  }
+  },[server_url,jwt]);
 
-  const accept=(requestId)=>{
+  const accept=useCallback((requestId)=>{
     if(jwt && requestId){
       fetch(`${server_url}/api/requests/accept/${requestId}`,{
         method:"POST",
@@ -38,15 +38,15 @@ function Appbar() {
           "Content-Type":"application/json",
           Authorization:jwt
         },
-      }).then(res=>{
+      }).then(async res=>{
         if(res.ok){
-          // fetchRequest();
-          // dispatch(loadChat());
-          window.location.href=import.meta.env.VITE_FRONTEND_URL; // not industry standard so update it to commented code + join new chat room
+          fetchRequest();
+          dispatch(loadChat());
+          // window.location.href=import.meta.env.VITE_FRONTEND_URL; // not industry standard so update it to commented code + join new chat room
         }
       })
     }
-  }
+  },[server_url,jwt],fetchRequest,dispatch,loadChat);
 
   const reject=(requestId)=>{
     if(jwt && requestId){
@@ -80,7 +80,7 @@ function Appbar() {
       <h1 className="text-sm sm:text-xl font-bold">Chatify</h1>
 
       <div className="flex gap-4">
-        {isConnected ? (
+        {jwt && userInfo ? (
           <>
             {/* Requests Sent Button */}
             <button
@@ -133,7 +133,7 @@ function Appbar() {
       </div>
 
       {/* ChatRequest Popup (Only Load When Logged In) */}
-      {showChatRequest && isConnected && (
+      {showChatRequest && jwt && userInfo && (
         <div className="absolute top-18 right-4 bg-gray-950 text-white p-4 rounded-lg shadow-lg w-80 border border-gray-800 sm:w-96 md:w-[28rem] max-w-full">
           <ChatRequest onClose={() => setShowChatRequest(false)} />
         </div>

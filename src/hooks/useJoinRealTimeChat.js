@@ -13,6 +13,7 @@ export const useJoinRealTimeChat=(isReduxLoading)=>{
 
     const joinRooms=useCallback(()=>{
         if(isMsgLoading==false)   return;
+        if(!Chats.data)       return;
         Chats.data.forEach(ele=>{
             socket.emit("joinRoom",ele._id);
         })
