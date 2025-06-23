@@ -4,6 +4,10 @@ import { useDispatch, useSelector } from "react-redux";
 
 import  {load_selectedChat_msg} from "../redux/slices/oldChatMessageSlice"
 
+// import DoubleCheckReadIcon from "../assets/double_tick_read.svg"
+// import DoubleCheckIcon from "../assets/double_tick.svg"
+
+
 export default function Messages() {
     const server_url=import.meta.env.VITE_SERVER_URL;
     const dispatch=useDispatch();
@@ -81,12 +85,23 @@ export default function Messages() {
             <div className="flex flex-col h-full w-full">
                 {selectedChat ? (
                     <div className="flex flex-col h-full bg-white shadow-md rounded-lg border border-gray-200 p-4">
-                        <h2 className="text-xl font-semibold text-gray-900 text-center py-2 border-b border-gray-300 shadow-sm tracking-wide mb-4">{selectedChatDetails.username[0]==userInfo.username?selectedChatDetails.username[1].toUpperCase():selectedChatDetails.username[0].toUpperCase()}</h2>
+                        <div className="flex flex-row justify-center text-xl font-semibold text-gray-900 text-center py-2 border-b border-gray-300 shadow-sm tracking-wide mb-4">
+                            <h2>{selectedChatDetails.username[0]==userInfo.username?
+                            (selectedChatDetails.username[1].length>8?selectedChatDetails.username[1].slice(0,6).toUpperCase()+"..":selectedChatDetails.username[1].toUpperCase()):
+                            (selectedChatDetails.username[0].length>8?selectedChatDetails.username[0].slice(0,6).toUpperCase()+"..":selectedChatDetails.username[0].toUpperCase())}
+                            </h2>
+                        </div>
+                        {/* <img src={DoubleCheckReadIcon} alt="Read" width="35" height="35" />
+                        <img src={DoubleCheckIcon} alt="unRead" width="35" height="35" /> */}
                         <div className="flex-grow overflow-y-auto p-3 rounded-lg bg-white shadow-md border border-gray-300" ref={chatContainerRef}>
                             {oldChatMessage?oldChatMessage.map((msg,index) => (
                                 <div key={index} className={`p-3 my-2 rounded-lg ${msg.sender_name === userInfo.username ? "bg-blue-500 text-white text-right ml-auto" : "bg-gray-300 text-black"}`}>
                                     <div className="text-sm font-semibold mb-1">{msg.sender_name==userInfo.username?"You":msg.sender_name}</div>
                                     <div className="bg-gray-200 p-2 rounded-md max-w-[70%] inline-block shadow-sm text-black w-fit  break-words  whitespace-pre-wrap">{msg.message}</div>
+                                    {/* {msg.sender_name!==userInfo.username?"":
+                                    <div className="flex justify-end">
+                                        <img src={DoubleCheckReadIcon} className="bg-amber-50 rounded-md mt-2" alt="Read" width="35" height="35"/>
+                                    </div>} */}
                                 </div>
                             )):null}
                             {AllUnreadMessage?AllUnreadMessage.map((msg,index) => (

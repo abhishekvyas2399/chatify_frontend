@@ -6,6 +6,7 @@ import selectedChatReducer from "./slices/selectedChatSlice"
 import newMessageSliceReducer from "./slices/newMessageSlice"
 import oldChatMessageSliceReducer from "./slices/oldChatMessageSlice"
 import AllUnreadMessageSliceReducer from "./slices/allUnreadmessageSlice"
+import videoCallSliceReducer from "./slices/videoCallSlice"
 
 export const store=configureStore({
     reducer:{
@@ -15,5 +16,6 @@ export const store=configureStore({
         oldChatMessage:oldChatMessageSliceReducer, // store all loaded old chat message of a chat
         AllUnreadMessage:AllUnreadMessageSliceReducer, // store all unread messages of all chat of a user
         newMessage:newMessageSliceReducer,   // store message get from socket
+        videoCallChatData:videoCallSliceReducer,  // store chat meta data who did video call
     }
 });
