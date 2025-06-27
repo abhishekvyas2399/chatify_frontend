@@ -4,7 +4,7 @@ import ServerOff from "../component/static/ServerOff"
 
 import {useLoadReduxData} from "../hooks/useLoadReduxData"
 import {useJoinRealTimeChat} from "../hooks/useJoinRealTimeChat"
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux"
 import { clearState, load_selectedChat_msg } from "../redux/slices/oldChatMessageSlice"
 
@@ -22,10 +22,11 @@ function Homepage(){
     // video call hooks
     const socket=useSocket();
     const [callerData,setCallerData]=useState(null);
-    const [isCalling,setIsCalling]=useState(false);
-    const [incomingCall,setIncomingCall]=useState(false);
-    const [accepted,setAccepted]=useState(false);
-    const [callStarted,setCallStarted]=useState(false);
+    const [showCallingScreen,setShowCallingScreen]=useState(false);
+    const [showIncomingCallScreen,setShowIncomingCallScreen]=useState(false);
+    const [startSenderCall,setStartSenderCall]=useState(false);
+    const [startReceiverCall,setStartReceiverCall]=useState(false);
+    const currentStream=useRef(null);
 
     const dispatch=useDispatch();
     const selectedChat=useSelector(state=>state.selectedChat.chatId);
@@ -39,38 +40,39 @@ function Homepage(){
 
 
 
-    const chatData=useSelector(state=>state.videoCallChatData.ChatData);
+    const VideoChatData=useSelector(state=>state.videoCallChatData.ChatData);
     const Chats =useSelector(state=>state.Chats.data);
     const handleVideoCall=useCallback((chat)=>{
+        if(!chat) return;
         const chatId=chat._id;
         if(!chatId) return;
         setCallerData(chat);
         socket.emit("videoCall",chatId);
-        setIsCalling(true);
-    },[socket,setIsCalling]);
+        setShowCallingScreen(true);
+    },[socket]);
 
     useEffect(()=>{
-        if(chatData)    handleVideoCall(chatData);
-    },[chatData,handleVideoCall]);
+        if(VideoChatData)    handleVideoCall(VideoChatData);
+    },[VideoChatData,handleVideoCall]);
 
     useEffect(()=>{
         socket.on("videoCallAnswer",({call,offline})=>{
-            console.log(call," ",offline);
-            if(offline){
-                alert("he is offline...");
-                setIsCalling(false);
-                dispatch(clearVideoCallChatData());
+            if(offline){//offline
+                // alert("he is offline...");
+                setTimeout(()=>{
+                    setShowCallingScreen(false);
+                    dispatch(clearVideoCallChatData());
+                    setCallerData(null);
+                },2000);
             }
-            else if(call){
-                // alert("he is online");
-                setIsCalling(false);
-                setAccepted(true);
-                setCallStarted(true);
-            }else{
-                if(isCalling)   alert("he rejected your call...");
-                // he is offline so give user msg and turn off videocall
-                setIsCalling(false);
+            else if(call){//online
+                setShowCallingScreen(false);
+                setStartSenderCall(true);
+            }else{//rejected ur call
+                if(showCallingScreen)   alert("he rejected your call...");
+                setShowCallingScreen(false);
                 dispatch(clearVideoCallChatData());
+                setCallerData(null);
             }
         })
         return ()=>{
@@ -79,42 +81,51 @@ function Homepage(){
     },[socket]);
 
     const EndVideoCall=useCallback(()=>{
-        setIsCalling(false);
-        setIncomingCall(false);
-        setAccepted(false);
-        setCallStarted(false);
+        setShowCallingScreen(false);
+        setShowIncomingCallScreen(false);
+        setStartSenderCall(false);
+        setStartReceiverCall(false);
         if(!callerData) return;
         const chatId=callerData._id;
+        if(!chatId) return;
         socket.emit("endVideoCall",chatId);
         setCallerData(null);
-    },[socket,callerData]);
+        dispatch(clearVideoCallChatData());
+        if(currentStream.current){
+            currentStream.current.getTracks().forEach(track=>{
+                track.stop();
+            })
+        }
+    },[socket,callerData,dispatch]);
 
     useEffect(()=>{
         socket.on("endVideoCall",(chatId)=>{
-            console.log(chatId);
-            console.log(callerData);
             if(!callerData) return;
             if(callerData._id==chatId){
+                setShowCallingScreen(false);
+                setShowIncomingCallScreen(false);
+                setStartSenderCall(false);
+                setStartReceiverCall(false);
                 setCallerData(null);
-                setIsCalling(false);
-                setIncomingCall(false);
-                setAccepted(false);
-                setCallStarted(false);         
+                dispatch(clearVideoCallChatData());
+                if(currentStream.current){
+                    currentStream.current.getTracks().forEach(track=>{
+                        track.stop();
+                    })
+                }
             }
         })
         return ()=>{
             socket.off("endVideoCall");
         }
-    },[socket,callerData]);
+    },[socket,callerData,dispatch]);
 
     useEffect(()=>{
         socket.on("videoCall",(chatId)=>{
-            console.log("got a chat request");
             const validChat=Chats.find(chat=>chat._id==chatId)|| null;
             if(!validChat)  return;
             setCallerData(validChat);
-            console.log(validChat);
-            setIncomingCall(true);
+            setShowIncomingCallScreen(true);
         });
 
         return ()=>{
@@ -129,10 +140,10 @@ function Homepage(){
         <div>
             {/* for video call window */}
             <div className="fixed top-35">
-                {isCalling && <VideoCall_calling EndVideoCall={EndVideoCall} clearVideoCallChatData={clearVideoCallChatData}/>}
-                {incomingCall && <VideoCall_answer EndVideoCall={EndVideoCall} callerData={callerData} setCallerData={setCallerData} setIncomingCall={setIncomingCall} setCallStarted={setCallStarted}/>}
-                {callStarted && accepted && <VideoCall_sender EndVideoCall={EndVideoCall} roomId={callerData._id} setAccepted={setAccepted} setCallStarted={setCallStarted} />}
-                {callStarted && !accepted  && <VideoCall_reciever EndVideoCall={EndVideoCall} roomId={callerData._id} setCallStarted={setCallStarted} />}
+                {showCallingScreen && <VideoCall_calling callerData={callerData} EndVideoCall={EndVideoCall} />}
+                {showIncomingCallScreen && <VideoCall_answer callerData={callerData} setCallerData={setCallerData} setShowIncomingCallScreen={setShowIncomingCallScreen} setStartReceiverCall={setStartReceiverCall}/>}
+                {startSenderCall && <VideoCall_sender currentStream={currentStream} EndVideoCall={EndVideoCall} roomId={callerData._id} />}
+                {startReceiverCall && <VideoCall_reciever currentStream={currentStream} EndVideoCall={EndVideoCall} roomId={callerData._id} />}
             </div>
 
             <Outlet/>{/* outlet will render Chats or Messages depending on the URL */}

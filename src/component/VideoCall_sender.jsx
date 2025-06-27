@@ -2,15 +2,17 @@ import { useCallback, useEffect, useRef, useState } from "react"
 
 import callEndSvg from "../assets/call_end.svg"
 import { useSocket } from "../context/SocketContext";
-import { clearVideoCallChatData } from "../redux/slices/videoCallSlice";
 
 
-export default function VideoCall_sender({roomId,EndVideoCall,setAccepted,setCallStarted}){
+export default function VideoCall_sender({roomId,EndVideoCall,currentStream}){
     const socket=useSocket();
     const remoteVideoRef=useRef();
     const localVideoRef=useRef();
     const [peerConnectionRef,setPeerConnectionRef]=useState(null);
     const [localStream,setLocalStream]=useState(null);
+
+    const iceCandidateList=useRef([]);
+    const isRemoteDescriptionSet=useRef(false);
 
     console.log("sender side : ",roomId);
 
@@ -20,6 +22,7 @@ export default function VideoCall_sender({roomId,EndVideoCall,setAccepted,setCal
                 const stream = await navigator.mediaDevices.getUserMedia({video: { width: 640, height: 480 }, audio: true});
                 localVideoRef.current.srcObject = stream;
                 setLocalStream(stream);
+                currentStream.current=stream;
             } catch (err) {
                 console.error('Error accessing media devices.', err);
             }
@@ -62,22 +65,29 @@ export default function VideoCall_sender({roomId,EndVideoCall,setAccepted,setCal
             }
         };
 
-        // socket.on('offer', async ({roomId,offer}) => {
-        //     await peerConnectionRef.setRemoteDescription(new RTCSessionDescription(offer));
-        //     const answer = await peerConnectionRef.createAnswer();
-        //     await peerConnectionRef.setLocalDescription(answer);
-        //     socket.emit('answer', {roomId,answer});
-        // });
-
         socket.on('answer', async (answer) => {
             await peerConnectionRef.setRemoteDescription(new RTCSessionDescription(answer));
+            isRemoteDescriptionSet.current=true;
+
+            iceCandidateList.current.forEach(async (candidate)=>{
+                try {
+                    await peerConnectionRef.addIceCandidate(candidate);
+                } catch (e) {
+                    console.error('Error adding received ice candidate', e);
+                }
+            })
+            iceCandidateList.current=[];
         });
 
         socket.on('ice-candidate', async (iceCandidate) => {
-            try {
-                await peerConnectionRef.addIceCandidate(iceCandidate);
-            } catch (e) {
-                console.error('Error adding received ice candidate', e);
+            if(isRemoteDescriptionSet.current){
+                try {
+                    await peerConnectionRef.addIceCandidate(iceCandidate);
+                } catch (e) {
+                    console.error('Error adding received ice candidate', e);
+                }
+            }else{
+                iceCandidateList.current.push(iceCandidate);
             }
         });
 
@@ -109,7 +119,7 @@ export default function VideoCall_sender({roomId,EndVideoCall,setAccepted,setCal
           <Video className="w-6 h-6" />
         </button> */}
         <button
-          onClick={()=>{EndVideoCall();dispatch(clearVideoCallChatData());}}
+          onClick={()=>{EndVideoCall();}}
           className="bg-red-600 text-white p-3 rounded-full hover:bg-red-500"
         >
           <img src={callEndSvg} alt="cut call" className="w-6 h-6" />

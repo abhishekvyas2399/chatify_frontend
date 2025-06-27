@@ -4,12 +4,15 @@ import callEndSvg from "../assets/call_end.svg"
 import { useSocket } from "../context/SocketContext";
 
 
-export default function VideoCall_reciever({roomId,EndVideoCall,setCallStarted}){
+export default function VideoCall_reciever({roomId,EndVideoCall,currentStream}){
     const socket=useSocket();
     const remoteVideoRef=useRef();
     const localVideoRef=useRef();
     const peerConnectionRef=useRef();
     const [localStream,setLocalStream]=useState(null);
+
+    const iceCandidateList=useRef([]);
+    const isRemoteDescriptionSet=useRef(false);
 
     console.log("reciever side : ",roomId);
 
@@ -19,6 +22,7 @@ export default function VideoCall_reciever({roomId,EndVideoCall,setCallStarted})
                 const stream = await navigator.mediaDevices.getUserMedia({video: { width: 640, height: 480 }, audio: true});
                 localVideoRef.current.srcObject = stream;
                 setLocalStream(stream);
+                currentStream.current=stream;
             }catch(err){
                 console.error('Error accessing media devices.', err);
             }
@@ -51,20 +55,30 @@ export default function VideoCall_reciever({roomId,EndVideoCall,setCallStarted})
 
         socket.on('offer', async ({roomId,offer}) => {
             await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(offer));
+            isRemoteDescriptionSet.current=true;
             const answer = await peerConnectionRef.current.createAnswer();
             await peerConnectionRef.current.setLocalDescription(answer);
             socket.emit('answer', {roomId,answer});
+
+            iceCandidateList.current.forEach(async (candidate)=>{
+                try {
+                    await peerConnectionRef.current.addIceCandidate(candidate);
+                } catch (e) {
+                    console.error('Error adding received ice candidate', e);
+                }
+            })
+            iceCandidateList.current=[];
         });
 
-        // socket.on('answer', async (answer) => {
-        //     await peerConnectionRef.setRemoteDescription(new RTCSessionDescription(answer));
-        // });
-
         socket.on('ice-candidate', async (iceCandidate) => {
-            try {
-                await peerConnectionRef.current.addIceCandidate(iceCandidate);
-            } catch (e) {
-                console.error('Error adding received ice candidate', e);
+            if(isRemoteDescriptionSet.current){
+                try {
+                    await peerConnectionRef.current.addIceCandidate(iceCandidate);
+                } catch (e) {
+                    console.error('Error adding received ice candidate', e);
+                }
+            }else{
+                iceCandidateList.current.push(iceCandidate);
             }
         });
 
@@ -74,19 +88,6 @@ export default function VideoCall_reciever({roomId,EndVideoCall,setCallStarted})
             socket.off('ice-candidate');
         };
     },[socket,localStream]);
-
-    // const initiateCall = useCallback(async () => {
-    //     if (!peerConnectionRef) return;
-
-    //     const offer = await peerConnectionRef.createOffer();
-    //     await peerConnectionRef.setLocalDescription(offer);
-    //     socket.emit('offer',{roomId,offer});
-    // },[socket,peerConnectionRef]);
-
-    // useEffect(()=>{
-    //   if(accepted)
-    //     initiateCall();
-    // },[initiateCall]);
 
 
     return (
