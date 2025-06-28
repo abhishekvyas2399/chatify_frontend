@@ -91,30 +91,27 @@ export default function VideoCall_reciever({roomId,EndVideoCall,currentStream}){
 
 
     return (
-    <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-90 z-50 flex flex-col items-center justify-center">
-      {/* Remote Video */}
-      <video ref={remoteVideoRef} autoPlay playsInline className="w-[90%] h-[60%] bg-black object-cover rounded-lg shadow-xl"/>
-      {/* Local Video small corner */}
-      <video ref={localVideoRef} autoPlay playsInline muted className="w-40 h-32 absolute bottom-24 right-4 bg-gray-800 object-cover rounded-md border"/>
-
-      {/* User Info */}
-      {/* <div className="text-white mt-4 text-xl">{callUser || "Calling..."}</div> */}
-
-      {/* Call Controls */}
-      <div className="mt-6 flex gap-4">
-        {/* <button className="bg-gray-700 text-white p-3 rounded-full hover:bg-gray-600">
-          <Mic className="w-6 h-6" />
-        </button> */}
-        {/* <button className="bg-gray-700 text-white p-3 rounded-full hover:bg-gray-600">
-          <Video className="w-6 h-6" />
-        </button> */}
-        <button
-          onClick={()=>{EndVideoCall()}}
-          className="bg-red-600 text-white p-3 rounded-full hover:bg-red-500"
-        >
-          <img src={callEndSvg} alt="cut call" className="w-6 h-6" />
-        </button>
-      </div>
-    </div>
+        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-90 z-50 flex flex-col items-center justify-center p-4">
+            {/* Remote Video */}
+            <div className="relative w-full max-w-5xl aspect-video bg-black rounded-lg overflow-hidden shadow-xl">
+                <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-contain"/>
+            </div>
+            {/* Local Video */}
+            <div className="absolute bottom-6 right-6 w-32 h-24 md:w-40 md:h-32 rounded-md overflow-hidden border border-white bg-gray-800 shadow-lg">
+                <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-contain"/>
+            </div>
+            {/* Call Controls */}
+            <div className="mt-6 flex flex-wrap justify-center gap-4">
+                {/* <button className="bg-gray-700 text-white p-3 rounded-full hover:bg-gray-600">
+                    <Mic className="w-6 h-6" />
+                </button> */}
+                {/* <button className="bg-gray-700 text-white p-3 rounded-full hover:bg-gray-600">
+                    <Video className="w-6 h-6" />
+                </button> */}
+                <button onClick={() => EndVideoCall()} className="bg-red-600 text-white p-3 rounded-full hover:bg-red-500">
+                    <img src={callEndSvg} alt="cut call" className="w-6 h-6" />
+                </button>
+            </div>
+        </div>
     )
 }
