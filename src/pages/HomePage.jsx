@@ -18,6 +18,7 @@ import { clearVideoCallChatData } from "../redux/slices/videoCallSlice"
 function Homepage(){
     const {isReduxLoading}=useLoadReduxData();
     const isMsgLoading=useJoinRealTimeChat(isReduxLoading);
+    const [isServerOff,setIsServerOff]=useState(false);
 
     // video call hooks
     const socket=useSocket();
@@ -133,8 +134,15 @@ function Homepage(){
         }
     },[socket,Chats]);
 
+    useEffect(()=>{
+        setTimeout(()=>{
+            if(!socket.connected)    setIsServerOff(true);
+        },5000)
+    },[socket]);
+
     console.log("home page re-rendering!!");
-    if(isMsgLoading)  return <Loading></Loading>
+    if(isServerOff)  return <ServerOff/>
+    if(isMsgLoading)  return <Loading/>
 
     return (
         <div>
