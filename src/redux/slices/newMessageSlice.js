@@ -14,6 +14,13 @@ const newMessageSlice=createSlice({
                     //   "chat123": [ { text: "Hello" }, { text: "How are you?" } ],
                     //   "chat456": [ { text: "Hey!" }, { text: "What's up?" } ]
                     // }
+        },
+        updateMessageReadRecipt:(state,action)=>{
+            const {isRead,chatId}=action.payload;
+            state[chatId]=state[chatId].map(msg=>{
+                msg.isRead=isRead;
+                return msg;
+            })
         }
     }
 })
@@ -21,6 +28,6 @@ const newMessageSlice=createSlice({
 // dispatch(addMessage({ chatId, message }));    for execute this action
 // const messages = useSelector((state) => state.messages[chatId] || []);    for access messages from it
 
-export const {addMessage}=newMessageSlice.actions;
+export const {addMessage,updateMessageReadRecipt}=newMessageSlice.actions;
 
 export default newMessageSlice.reducer;

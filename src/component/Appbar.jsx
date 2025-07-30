@@ -27,7 +27,7 @@ function Appbar(){
         "Content-Type":"application/json",
         Authorization:jwt
       },
-    }).then(res=>res.json()).then(data=>setRequests(data.msg));
+    }).then(res=>res.json()).then(data=>setRequests(data.allRequests));
   },[server_url,jwt]);
 
   const accept=useCallback((requestId)=>{
@@ -144,9 +144,9 @@ function Appbar(){
         <div className="absolute top-18 right-4 bg-gray-950 text-white p-4 rounded-lg shadow-lg w-80 border border-gray-800 sm:w-96 md:w-[28rem] max-w-full">
           <h2 className="text-lg font-semibold mb-3 text-gray-200">Requests</h2>
           <ul>
-            {requests.map((request, index) => (
+            {requests && requests.map((request, index) => (
               <li key={index} className="flex justify-between items-center bg-gray-800 p-2 mb-2 rounded-md">
-                <span className="truncate overflow-hidden max-w-[60%]">{request.sender_name}</span>
+                <span className="truncate overflow-hidden max-w-[60%]">{request.senderName}</span>
                 <div className="flex gap-2">
                   <button
                     onClick={() => accept(request._id)}

@@ -18,7 +18,7 @@ const ChatRequest = () => {
         "Content-Type":"application/json",
         Authorization:jwt
       },
-      body:JSON.stringify({request_to:chatRequest}),
+      body:JSON.stringify({requestTo:chatRequest}),
     }).then(res=>res.json()).then(data=>{alert(data.msg);console.log(data)});
 
   };

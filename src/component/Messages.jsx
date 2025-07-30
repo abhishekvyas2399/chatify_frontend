@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSocket } from "../context/SocketContext";
 import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
 
 import  {load_selectedChat_msg} from "../redux/slices/oldChatMessageSlice"
 
-// import DoubleCheckReadIcon from "../assets/double_tick_read.svg"
-// import DoubleCheckIcon from "../assets/double_tick.svg"
+import SingleMsg from "./SingleMsg";
 
 
 export default function Messages() {
@@ -25,28 +25,66 @@ export default function Messages() {
     const newMessage=useSelector(state=>state.newMessage[selectedChat]);
 
 
+    const [selectedFile, setSelectedFile] = useState(null);
+    const fileInputRef=useRef();
+    const handleFileSelect = (event) => {
+        const file=event.target.files[0];
+        if(file)    setSelectedFile(file);
+    };
+
     // Handle sending a new message
-    const sendMessage =useCallback(() => {
+    const sendMessage =useCallback(async () => {
         // *********** first send data to server for save in mongoDb then send to socket
-        const newMessage=messageRef.current.value;
+        const newMessage=messageRef.current.value.trim();
         messageRef.current.value="";
-        if (newMessage.trim() === "") return;
-        if (selectedChat){
-            fetch(`${server_url}/api/messages`,{
-                method:"POST",
-                headers:{
-                  "Content-Type":"application/json",
-                  Authorization:jwt
-                },
-                body:JSON.stringify({chat_Id:selectedChat,message:newMessage}),
-              }).then(res=>{
-                if(res.ok){
-                    // if save to DB sent it to socket
-                    socket.emit("chat Message",{chatId:selectedChat,newMessage,senderId:userInfo.id,senderName:userInfo.username});
-                }
-              });
+        if(!newMessage && !selectedFile)    return;
+        let payload={};
+        if(selectedFile){
+            if(selectedFile.size>10485760){
+                alert("file size must less than 10MB ...");
+                setSelectedFile(null);
+                fileInputRef.current.value=""; 
+                return;
+            }
+            const response=await axios.post(`${server_url}/api/uploads/uploadSignedUrl`,{fileType:selectedFile.type},
+                {headers:{Authorization:jwt}},
+            );
+            if(response.status!=200){
+                console.log("error while upload process ...");
+                setSelectedFile(null);
+                fileInputRef.current.value=""; 
+                return;
+            }
+            const data=response.data;
+            const uploadRes=await axios.put(data.signedUrl,selectedFile,{headers:{'Content-Type': selectedFile.type,}});
+            if(uploadRes.status!=200){
+                console.log("error while upload process ...");
+                setSelectedFile(null);
+                fileInputRef.current.value="";
+                return;
+            }
+            payload.filePath=data.filePath;
+            payload.fileType=data.fileType;
         }
-    },[messageRef,selectedChat,server_url,jwt,]);
+        if(newMessage){
+            payload.newMessage=newMessage;
+        }
+        payload.chatId=selectedChat;
+        // send key,msg everywhere needed like DB,socket by attach it
+
+        
+        if (selectedChat){ // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX send image path to DB & save its keypath there
+            const response= await axios.post(`${server_url}/api/messages`,payload,
+                {headers:{Authorization:jwt}},
+            );
+            if(response.status==200){
+                // if save to DB sent it to socket
+                socket.emit("chat Message",response.data);
+            }
+        }
+        setSelectedFile(null);
+        fileInputRef.current.value=""; 
+    },[messageRef,selectedChat,server_url,jwt,selectedFile]);
 
 
     // event=>scrolling to top will fetch more 20 old message from backend by redux thunk action dispatch
@@ -86,40 +124,34 @@ export default function Messages() {
                 {selectedChat ? (
                     <div className="flex flex-col h-full bg-white shadow-md rounded-lg border border-gray-200 p-4">
                         <div className="flex flex-row justify-center text-xl font-semibold text-gray-900 text-center py-2 border-b border-gray-300 shadow-sm tracking-wide mb-4">
-                            <h2>{selectedChatDetails.username[0]==userInfo.username?
-                            (selectedChatDetails.username[1].length>8?selectedChatDetails.username[1].slice(0,6).toUpperCase()+"..":selectedChatDetails.username[1].toUpperCase()):
-                            (selectedChatDetails.username[0].length>8?selectedChatDetails.username[0].slice(0,6).toUpperCase()+"..":selectedChatDetails.username[0].toUpperCase())}
+                            <h2>{selectedChatDetails.usernames[0]==userInfo.username?
+                            (selectedChatDetails.usernames[1].length>8?selectedChatDetails.usernames[1].slice(0,6).toUpperCase()+"..":selectedChatDetails.usernames[1].toUpperCase()):
+                            (selectedChatDetails.usernames[0].length>8?selectedChatDetails.usernames[0].slice(0,6).toUpperCase()+"..":selectedChatDetails.usernames[0].toUpperCase())}
                             </h2>
                         </div>
                         {/* <img src={DoubleCheckReadIcon} alt="Read" width="35" height="35" />
                         <img src={DoubleCheckIcon} alt="unRead" width="35" height="35" /> */}
                         <div className="flex-grow overflow-y-auto p-3 rounded-lg bg-white shadow-md border border-gray-300" ref={chatContainerRef}>
                             {oldChatMessage?oldChatMessage.map((msg,index) => (
-                                <div key={index} className={`p-3 my-2 rounded-lg ${msg.sender_name === userInfo.username ? "bg-blue-500 text-white text-right ml-auto" : "bg-gray-300 text-black"}`}>
-                                    <div className="text-sm font-semibold mb-1">{msg.sender_name==userInfo.username?"You":msg.sender_name}</div>
-                                    <div className="bg-gray-200 p-2 rounded-md max-w-[70%] inline-block shadow-sm text-black w-fit  break-words  whitespace-pre-wrap">{msg.message}</div>
-                                    {/* {msg.sender_name!==userInfo.username?"":
-                                    <div className="flex justify-end">
-                                        <img src={DoubleCheckReadIcon} className="bg-amber-50 rounded-md mt-2" alt="Read" width="35" height="35"/>
-                                    </div>} */}
-                                </div>
+                                <SingleMsg  key={index} msg={msg} index={index} username={userInfo.username}>
+                                {/* add double tick in singleMsg component */}
+                                </SingleMsg>
                             )):null}
                             {AllUnreadMessage?AllUnreadMessage.map((msg,index) => (
-                                <div key={index} className={`p-2 my-1 rounded ${msg.sender_name === userInfo.username ? "bg-blue-500 text-white text-right" : "bg-gray-300 text-black"}`}>
-                                    <div className="text-sm font-semibold mb-1">{msg.sender_name==userInfo.username?"You":msg.sender_name}</div>
-                                    <div className="bg-gray-200 p-2 rounded-md max-w-[70%] inline-block shadow-sm text-black w-fit  break-words  whitespace-pre-wrap">{msg.message}</div>
-                                </div>
+                                <SingleMsg key={index} msg={msg} index={index} username={userInfo.username}></SingleMsg>
                             )):null}
                             {newMessage?newMessage.map((msg,index) => (
-                                <div key={index} className={`p-2 my-1 rounded ${msg.senderName === userInfo.username ? "bg-blue-500 text-white text-right" : "bg-gray-300 text-black"}`}>
-                                    <div className="text-sm font-semibold mb-1">{msg.senderName==userInfo.username?"You":msg.senderName}</div>
-                                    <div className="bg-gray-200 p-2 rounded-md max-w-[70%] inline-block shadow-sm text-black w-fit  break-words  whitespace-pre-wrap">{msg.message}</div>
-                                </div>
+                                <SingleMsg key={index} msg={msg} index={index} username={userInfo.username}></SingleMsg>
                             )):null}
                         </div>
 
                         {/* Input Box */}
-                        <div className="mt-4 flex items-center gap-2 shadow-2xl rounded-lg p-2 bg-white ">
+                        <div className="mt-4 flex flex-wrap items-center gap-2 shadow-2xl rounded-lg p-2 bg-white w-full ">
+                            <label className="cursor-pointer flex items-center justify-center w-10 h-10 bg-gray-200 rounded-full hover:bg-gray-300">
+                                <span className="text-xl font-bold text-gray-600">+</span>
+                                <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => handleFileSelect(e)}/>
+                            </label>
+        
                             <input
                                 type="text"
                                 className="flex-1 p-3 border-none outline-none bg-transparent text-gray-700 placeholder-gray-400"
@@ -130,6 +162,22 @@ export default function Messages() {
                             <button onClick={sendMessage} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200">
                                 Send
                             </button>
+
+                            {selectedFile && ( <div className="flex items-center gap-2 text-sm text-gray-700 mt-2 w-full flex-wrap">
+                                <span className="truncate max-w-xs">
+                                {selectedFile.name}
+                                </span>
+                                <button
+                                onClick={() =>{
+                                    setSelectedFile(null);
+                                    fileInputRef.current.value="";  // if not remove input value browser not trigger onchange if same file select bcz value same not change
+                                }}
+                                className="text-red-500 bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-400 transition duration-200"
+                                >
+                                Remove
+                                </button>
+                            </div>
+                            )}
                         </div>
                     </div>
                 ) : (

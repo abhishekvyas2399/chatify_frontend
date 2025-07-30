@@ -3,7 +3,7 @@ import Loading from "../component/static/Loading"
 import ServerOff from "../component/static/ServerOff"
 
 import {useLoadReduxData} from "../hooks/useLoadReduxData"
-import {useJoinRealTimeChat} from "../hooks/useJoinRealTimeChat"
+import useListenChatMsg from "../hooks/useListenChatMsg";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux"
 import { clearState, load_selectedChat_msg } from "../redux/slices/oldChatMessageSlice"
@@ -15,9 +15,33 @@ import VideoCall_reciever from "../component/VideoCall_reciever"
 import { useSocket } from "../context/SocketContext";
 import { clearVideoCallChatData } from "../redux/slices/videoCallSlice"
 
+//********************************************************
+// ✅ Include in [] (store by value → may go stale):
+// 	•	props
+// 	•	state variables from useState
+// 	•	context values
+// 	•	Computed variables (const x = something + y)
+// 	•	Functions created with useCallback
+// 💡 Why? These are value-based, so React can’t track their latest version unless you list them.
+// ///
+// ❌ Do NOT include (store by reference → auto-updated):
+// 	•	navigate (from react-router)
+// 	•	location, params, match
+// 	•	dispatch (from Redux)
+// 	•	setState functions
+// 	•	Functions NOT wrapped in useCallback
+// 💡 Why? These are reference-based, always point to the latest — including them may cause unnecessary re-renders.
+//********************************************************
+
+// Yes ✅, navigate is unstable because React Router creates a new navigate function on every render, so:
+// 	•	🔁 It changes on re-render → makes useCallback or useEffect re-run.
+// 	•	🚫 If you add it in dependencies, effect keeps firing again.
+// 	•	✅ But you can safely exclude it — it always refers to the latest internal router, so it still works fine even if not in dependencies.
+
+
 function Homepage(){
     const {isReduxLoading}=useLoadReduxData();
-    const isMsgLoading=useJoinRealTimeChat(isReduxLoading);
+    useListenChatMsg();
     const [isServerOff,setIsServerOff]=useState(false);
 
     // video call hooks
@@ -137,18 +161,18 @@ function Homepage(){
     useEffect(()=>{
         setTimeout(()=>{
             if(!socket.connected)    setIsServerOff(true);
-        },5000)
+        },10000)
     },[socket]);
 
     console.log("home page re-rendering!!");
     if(isServerOff)  return <ServerOff/>
-    if(isMsgLoading)  return <Loading/>
+    if(isReduxLoading)  return <Loading/>
 
     return (
         <div>
             {/* for video call window */}
             <div className="fixed top-35">
-                {showCallingScreen && <VideoCall_calling callerData={callerData} EndVideoCall={EndVideoCall} />}
+                {/* {showCallingScreen && <VideoCall_calling callerData={callerData} EndVideoCall={EndVideoCall} />} */}
                 {showIncomingCallScreen && <VideoCall_answer callerData={callerData} setCallerData={setCallerData} setShowIncomingCallScreen={setShowIncomingCallScreen} setStartReceiverCall={setStartReceiverCall}/>}
                 {startSenderCall && <VideoCall_sender currentStream={currentStream} EndVideoCall={EndVideoCall} roomId={callerData._id} />}
                 {startReceiverCall && <VideoCall_reciever currentStream={currentStream} EndVideoCall={EndVideoCall} roomId={callerData._id} />}

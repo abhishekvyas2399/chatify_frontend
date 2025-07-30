@@ -5,7 +5,7 @@ const SocketContext=createContext(null);
 
 export const SocketProvider=({children})=>{
     const serverUrl=import.meta.env.VITE_SERVER_URL;
-    console.log("socket provider re-render");
+    console.log("socket provider render");
     const socket=useMemo(()=>io(serverUrl),[])
     return <SocketContext.Provider value={socket}>
         {children}

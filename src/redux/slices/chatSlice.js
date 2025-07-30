@@ -11,7 +11,8 @@ export const loadChat=createAsyncThunk("loadChat",async (_,{getState})=>{
             "Authorization": jwt,
         }
     });
-    return response.json();
+    const data=await response.json();
+    return data.allChat;
 })
 
 
