@@ -54,6 +54,8 @@ export default function Messages() {
         if(selectedFileCopy){
             if(selectedFileCopy.size>10485760){
                 alert("file size must less than 10MB ...");
+                const newUploadingData2=uploadingData.filter(data=>data.id!=id);
+                setUploadingData(newUploadingData2);
                 return;
             }
             let response;
@@ -63,6 +65,8 @@ export default function Messages() {
                 );
             }catch(e){
                 console.error("error while upload process ...",e.message);
+                const newUploadingData2=uploadingData.filter(data=>data.id!=id);
+                setUploadingData(newUploadingData2);
                 return;
             }
             const data=response.data;
@@ -71,6 +75,8 @@ export default function Messages() {
                 uploadRes=await axios.put(data.signedUrl,selectedFileCopy,{headers:{'Content-Type': selectedFileCopy.type,}});
             }catch(e){
                 console.log("error while upload process ...");
+                const newUploadingData2=uploadingData.filter(data=>data.id!=id);
+                setUploadingData(newUploadingData2);
                 return;
             }
             payload.filePath=data.filePath;
@@ -84,10 +90,13 @@ export default function Messages() {
 
         
         if (selectedChat){
+            let response=null;
             try{
-                const response= await axios.post(`${server_url}/api/messages`,payload,{headers:{Authorization:jwt}});
+                response= await axios.post(`${server_url}/api/messages`,payload,{headers:{Authorization:jwt}});
             }catch(e){
                 console.log("error while upload file...");
+                const newUploadingData2=uploadingData.filter(data=>data.id!=id);
+                setUploadingData(newUploadingData2);
                 return;
             }
             // if save to DB sent it to socket
