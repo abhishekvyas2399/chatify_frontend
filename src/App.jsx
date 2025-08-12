@@ -8,7 +8,6 @@ const MessagePage=lazy(()=>import("./pages/MessagePage"));
 
 import Loading from "./component/static/Loading";
 import Appbar from "./component/Appbar";
-import Footer from "./component/static/Footer";
 import Homepage from "./pages/HomePage";
 
 // ***** chatGPT *****
@@ -56,7 +55,7 @@ import Homepage from "./pages/HomePage";
 
 
 function App(){
-    return (<>
+    return (<div className="flex flex-col h-screen">
         <Appbar/>
         <Routes>
             <Route path="/" element={<Homepage/>}>
@@ -66,8 +65,7 @@ function App(){
             <Route path="/register" element={<Suspense fallback={<Loading/>}> <Register/> </Suspense>} />
             <Route path="/login"  element={<Suspense fallback={<Loading/>}> <Login/> </Suspense>} />
         </Routes>
-        <Footer></Footer>
-    </>)
+    </div>)
 }
 
 

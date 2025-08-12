@@ -5,6 +5,7 @@ import ChatRequest from "./ChatRequest";
 
 import { loadChat } from "../redux/slices/chatSlice";
 import { useSocket } from "../context/SocketContext";
+import UserInfoAndOther from "./UserInfoAndOther";
 
 function Appbar(){
   const server_url=import.meta.env.VITE_SERVER_URL;
@@ -13,6 +14,7 @@ function Appbar(){
   const socket=useSocket();
   const [showChatRequest, setShowChatRequest] = useState(false);
   const [showReceivedRequests, setShowReceivedRequests] = useState(false);
+  const [showUserInfo,setShowUserInfo]=useState(false);
   // const [requests, setRequests] = useState([{username:"name1"},{username:"name2"},{username:"name3"}]);
   const [requests, setRequests] = useState([]);
 
@@ -70,22 +72,18 @@ function Appbar(){
     }
   },[jwt]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("Authorization");
-    window.location.href="/";
-  };
 
   return (
-    <div className="bg-black text-white flex justify-between items-center p-4 shadow-md relative">
-      <h1 className="text-sm sm:text-xl font-bold">Chatify</h1>
+    <div className="bg-gradient-to-r from-[#16122d] via-[#1c133e] to-[#231a54] w-full h-16 text-white flex justify-between items-center p-4 shadow-md relative">
+      <h1 className="text-base font-bold">Chatify</h1>
 
-      <div className="flex gap-4">
+      <div className="flex gap-2 sm:gap-4">
         {jwt && userInfo ? (
           <>
             {/* Requests Sent Button */}
             <button
               onClick={() =>{setShowChatRequest(!showChatRequest);setShowReceivedRequests(false)}}
-              className="bg-green-600 hover:bg-green-700 text-white font-semibold sm:py-2 sm:px-4 py-0.5 px-0.5 rounded-md transition duration-300"
+              className="bg-gradient-to-r from-blue-600 to-purple-600  hover:opacity-90 shadow-md  text-white font-semibold px-1.5 py-1.5  sm:px-3 rounded-md transition duration-300 text-base"
             >
               Send request
             </button>
@@ -95,20 +93,27 @@ function Appbar(){
             <button
                 onClick={() =>{
                   setShowReceivedRequests(!showReceivedRequests);
-                  setShowChatRequest(false);    
+                  setShowChatRequest(false);
                   if(jwt) fetchRequest();
                 }}
-                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold sm:py-2 sm:px-4 py-0.5 px-0.5 rounded-md transition duration-300"
+                className="bg-gradient-to-r from-purple-600 to-pink-600 shadow-md hover:opacity-90 transition text-white font-semibold px-1.5 py-1.5  sm:px-3  rounded-md duration-300 text-base"
             >
                 Requests 2U
             </button>
 
             {/* Logout Button */}
             <button
-              onClick={handleLogout}
-              className="bg-red-600 hover:bg-red-700 text-white font-semibold py-0.5 px-0.5 sm:py-2 sm:px-4 rounded-md transition duration-300"
+              onClick={()=>{
+                setShowUserInfo(!showUserInfo);
+              }}
             >
-              Logout
+              {/* <div className="bg-gradient-to-r from-indigo-900  to-indigo-600  w-10 h-10 flex items-center justify-center text-white font-bold rounded-full text-lg">
+                  {userInfo.username[0].toUpperCase()}
+              </div> */}
+              <div className="p-[3px] rounded-full bg-gradient-to-r from-blue-700 to-pink-700">
+                {userInfo.profileSignedUrl?<img src={userInfo.profileSignedUrl} alt="User" className="w-10 h-10 rounded-full border-4 border-[#1c1b29]"/>:<div className="w-10 h-10 rounded-full border-4 border-[#1c1b29] flex justify-center items-center text-2xl">{userInfo.username[0].toUpperCase()}</div>
+                }
+              </div>
             </button>
           </>
         ) : (
@@ -116,7 +121,7 @@ function Appbar(){
             {/* Login Button */}
             <button
               onClick={() => navigate("/login")}
-              className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold sm:py-2 sm:px-4 py-0.5 px-0.5 rounded-md transition duration-300"
+              className="bg-gradient-to-r from-blue-400 to-blue-600 hover:opacity-90 shadow-md  text-white font-semibold px-1.5 py-1.5  sm:px-3 rounded-md transition duration-300 text-base"
             >
               Login
             </button>
@@ -124,7 +129,7 @@ function Appbar(){
             {/* Register Button */}
             <button
               onClick={() => navigate("/register")}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold sm:py-2 sm:px-4 py-0.5 px-0.5 rounded-md transition duration-300"
+              className="bg-gradient-to-r from-blue-600 to-blue-900   hover:opacity-90 shadow-md  text-white font-semibold px-1.5 py-1.5  sm:px-3 rounded-md transition duration-300 text-base"
             >
               Register
             </button>
@@ -134,8 +139,14 @@ function Appbar(){
 
       {/* ChatRequest Popup (Only Load When Logged In) */}
       {showChatRequest && jwt && userInfo && (
-        <div className="absolute top-18 right-4 bg-gray-950 text-white p-4 rounded-lg shadow-lg w-80 border border-gray-800 sm:w-96 md:w-[28rem] max-w-full">
+        <div className="absolute top-18 right-4 bg-gray-950 text-white p-4 rounded-lg shadow-lg w-80 border border-gray-800 sm:w-96 md:w-[28rem] max-w-full z-5">
           <ChatRequest onClose={() => setShowChatRequest(false)} />
+        </div>
+      )}
+
+      {showUserInfo && jwt && userInfo && (
+        <div className="absolute top-18 right-4 rounded-lg shadow-lg max-w-full z-10">
+          <UserInfoAndOther onClose={() => setShowUserInfo(false)}></UserInfoAndOther>
         </div>
       )}
 

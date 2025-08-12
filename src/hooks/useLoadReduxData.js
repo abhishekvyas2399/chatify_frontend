@@ -60,6 +60,11 @@ export const useLoadReduxData=()=>{
             socket.emit("joinRoom",chat._id);
         })
         console.log("all chats real Time now .....");
+        // mark all chats real time msg delivered
+        Chats.forEach(chat=>{
+            socket.emit("read recipt",{chatId:chat._id,isRead:"delivered"});
+        })
+        // mark all chats msg delivered in DB are done already when we load all unread msg
         setisReduxLoading(false);
     },[socket,Chats])
 

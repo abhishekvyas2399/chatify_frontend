@@ -169,7 +169,7 @@ function Homepage(){
     if(isReduxLoading)  return <Loading/>
 
     return (
-        <div>
+        <div className="bg-gradient-to-r from-[#1c1841] via-[#251f45] to-[#0a0a1a] flex-1">
             {/* for video call window */}
             <div className="fixed top-35">
                 {/* {showCallingScreen && <VideoCall_calling callerData={callerData} EndVideoCall={EndVideoCall} />} */}

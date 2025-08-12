@@ -3,6 +3,7 @@ import {addMessage, updateMessageReadRecipt} from "../redux/slices/newMessageSli
 import axios from "axios"
 import { useCallback, useEffect } from "react";
 import { useSocket } from "../context/SocketContext";
+import { updateUnreadMessageReadRecipt } from "../redux/slices/allUnreadmessageSlice";
 
 export default function useListenChatMsg(){
     const server_url=import.meta.env.VITE_SERVER_URL;
@@ -13,7 +14,6 @@ export default function useListenChatMsg(){
 
     const msgSocketEventListner=useCallback(()=>{
         socket.on("chat Message",async ({chatId,createdAt,isRead,message,senderId,senderName,filePath,fileType,_id})=>{
-            const messageTime=new Date(createdAt).toLocaleString();
             if(selectedChat!=chatId){
                 try{
                     await axios.post(`${server_url}/api/messages/singleDelivered/${chatId}`,{msgId:_id},{headers:{Authorization:jwt}});
@@ -30,25 +30,25 @@ export default function useListenChatMsg(){
                     console.error(e.message);
                 }
             }
-            socket.emit("read recipt",{_id,chatId,isRead});
+            socket.emit("read recipt",{chatId,isRead});
             if(filePath && fileType){
                 try{
                     const res= await axios.post(`${server_url}/api/uploads/downloadSignedUrl`,{filePath},{headers:{Authorization:jwt}});
                     const fileSignedUrl=res.data.signedUrl;
-                    dispatch(addMessage({chatId,messageData:{_id,senderId,senderName,message,fileSignedUrl,filePath,fileType,messageTime,isRead}}));
+                    dispatch(addMessage({chatId,messageData:{_id,senderId,senderName,message,fileSignedUrl,filePath,fileType,createdAt,isRead}}));
                     return;
                 }catch(e){
                     console.error(e.message);
                 }
             }
-            dispatch(addMessage({chatId,messageData:{_id,senderId,senderName,message,messageTime,isRead}}));
+            dispatch(addMessage({chatId,messageData:{_id,senderId,senderName,message,createdAt,isRead}}));
         })
     },[socket,selectedChat,jwt]);
 
     const readReciptEventListner=useCallback(()=>{
         socket.on("read recipt",(data)=>{
-            console.log(data);
             dispatch(updateMessageReadRecipt(data));
+            dispatch(updateUnreadMessageReadRecipt(data));
         });
     },[]);
 

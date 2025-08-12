@@ -18,6 +18,8 @@ const newMessageSlice=createSlice({
         updateMessageReadRecipt:(state,action)=>{
             const {isRead,chatId}=action.payload;
             state[chatId]=state[chatId].map(msg=>{
+                if(isRead=="unread")    return msg;
+                if(isRead=="delivered" && msg.isRead!="unread") return msg;
                 msg.isRead=isRead;
                 return msg;
             })

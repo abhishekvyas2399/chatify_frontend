@@ -47,7 +47,20 @@ const allUnreadMessageSlice=createSlice({
             state.isLoading=false;
             state.isError=true;
         })
+    },
+    reducers:{
+        updateUnreadMessageReadRecipt:(state,action)=>{
+            const {isRead,chatId} =action.payload;
+            state.data.unreadMessage[chatId]=state.data.unreadMessage[chatId].map(msg=>{
+                if(isRead=="unread")    return msg;
+                if(isRead=="delivered" && msg.isRead!="unread") return msg;
+                msg.isRead=isRead;
+                return msg;
+            })
+        }
     }
 })
+
+export const {updateUnreadMessageReadRecipt}=allUnreadMessageSlice.actions;
 
 export default allUnreadMessageSlice.reducer;
